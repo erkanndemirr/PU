@@ -140,11 +140,11 @@ async getUserPosts(userId: number) {
   if (!match) throw new UnauthorizedException();
 
   const payload = {
-    sub: user.id,           // 🔥 EN KRİTİK SATIR
-    email: user.email,
-    username: user.username,
-    role: user.role,
-  };
+  sub: user.id, // ID burada 'sub' olarak tanımlanmış
+  email: user.email,
+  username: user.username,
+  role: user.role,
+};
 
   return {
     token: this.jwt.sign(payload),
