@@ -13,7 +13,7 @@ export class TopicController {
     return this.topicService.create({
       ...body,
       imageUrl: body.image, // Frontend'de 'image' adıyla yolladığın için imageUrl'e eşliyoruz
-      authorId: req.user.id, 
+        authorId: req.user.id, // 🔥 KRİTİK SATIR 
     });
   }
 

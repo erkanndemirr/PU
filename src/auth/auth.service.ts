@@ -130,21 +130,25 @@ async getUserPosts(userId: number) {
   });
 }
 
-  async login(username: string, password: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { username },
-    });
+ async login(username: string, password: string) {
+  const user = await this.prisma.user.findUnique({
+    where: { username },
+  });
 
-    if (!user) throw new UnauthorizedException();
+  if (!user) throw new UnauthorizedException();
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) throw new UnauthorizedException();
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new UnauthorizedException();
+  const payload = {
+    sub: user.id,           // 🔥 EN KRİTİK SATIR
+    email: user.email,
+    username: user.username,
+    role: user.role,
+  };
 
-    const token = this.jwt.sign({
-      userId: user.id,
-      role: user.role,
-    });
+  return {
+    token: this.jwt.sign(payload),
+  };
+}
 
-    return { token };
-  }
 }
