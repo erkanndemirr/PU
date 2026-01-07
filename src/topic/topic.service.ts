@@ -5,11 +5,27 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TopicService {
   constructor(private prisma: PrismaService) {}
 
-  create(title: string, userId: number) {
+  // Parametreleri bir obje olarak almak (DTO mantığı) her zaman daha güvenlidir
+  create(data: {
+    title: string;
+    topicContent?: string;
+    category?: string;
+    country?: string;
+    state?: string;
+    imageUrl?: string;
+    authorId: number;
+  }) {
     return this.prisma.topic.create({
       data: {
-        title,
-        authorId: userId,
+        title: data.title,
+        topicContent: data.topicContent,
+        category: data.category,
+        country: data.country,
+        state: data.state,
+        imageUrl: data.imageUrl,
+        author: {
+          connect: { id: data.authorId }, // authorId'yi user tablosuna bağlar
+        },
       },
     });
   }
@@ -17,31 +33,32 @@ export class TopicService {
   findAll() {
     return this.prisma.topic.findMany({
       include: {
-        author: { select: { id: true, email: true } },
-          _count: { select: { posts: true } },
+        author: { select: { id: true, email: true, username: true } },
+        _count: { select: { posts: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
   }
 
- findOne(id: number) {
-  return this.prisma.topic.findUnique({
-    where: { id },
-    include: {
-      author: {
-        select: { id: true, email: true },
-      },
-      posts: {
-        include: {
-          author: {
-            select: { id: true, email: true },
-          },
+  findOne(id: number) {
+    return this.prisma.topic.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: { id: true, username: true },
         },
-        orderBy: { createdAt: 'asc' },
+        posts: {
+          include: {
+            author: {
+              select: { id: true, username: true },
+            },
+            _count: {
+              select: { likes: true },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
       },
-    },
-  });
-}
-
-
+    });
+  }
 }

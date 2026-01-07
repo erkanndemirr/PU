@@ -7,6 +7,7 @@ import { TopicModule } from './topic/topic.module';
 import { PostModule } from './post/post.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
+import { FollowModule } from './follow/follow.module';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { RolesGuard } from './auth/roles.guard';
     AuthModule,
     TopicModule,
     PostModule,
+    FollowModule
   ],
 })
 export class AppModule {}

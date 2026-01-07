@@ -7,6 +7,7 @@ import {
   Param,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PostService } from './post.service';
@@ -30,11 +31,17 @@ export class PostController {
   like(@Param('id') id: string, @Req() req) {
     return this.postService.toggleLike(+id, req.user.userId);
   }
+  
+@Get('topic/:topicId')
+findByTopic(
+  @Param('topicId') topicId: string,
+  @Req() req,
+) {
+  const userId = req.user?.userId;
+  return this.postService.findByTopic(+topicId, userId);
+}
 
-  @Get('topic/:topicId')
-  findByTopic(@Param('topicId') topicId: string) {
-    return this.postService.findByTopic(+topicId);
-  }
+
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

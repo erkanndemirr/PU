@@ -22,17 +22,22 @@ export class PostService {
   });
 }
 
-
-    async findByTopic(topicId: number) {
+    async findByTopic(topicId: number,userId?:number) {
     return this.prisma.post.findMany({
       where: { topicId },
       include: {
         author: {
-          select: { id: true, email: true },
+          select: {  username: true },
         },
         _count: {
           select: { likes: true },
         },
+        likes: userId
+        ? {
+            where: { userId },
+            select: { id: true },
+          }
+        : false,
       },
       orderBy: { createdAt: 'asc' },
     });
