@@ -1,10 +1,44 @@
-import { Controller, Get, Post, Body, UseGuards, Param, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param, Request, Patch, Req, Delete } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { TopicService } from './topic.service';
 
 @Controller('topics')
 export class TopicController {
   constructor(private topicService: TopicService) {}
+// 🟢 KULLANICININ KENDİ TOPICLERİ
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  getMyTopics(@Req() req) {
+    return this.topicService.getMyTopics(req.user.userId);
+  }
+
+  // ✏️ TOPIC DÜZENLE
+ @UseGuards(AuthGuard('jwt'))
+  @Patch(':id')
+  updateTopic(
+    @Param('id') id: string,
+    @Body('title') title: string,
+    @Req() req,
+  ) {
+    return this.topicService.updateTopic(
+      +id,
+      title,
+      req.user.userId,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+@Delete(':id')
+deleteTopic(
+  @Param('id') id: string,
+  @Req() req,
+) {
+  return this.topicService.deleteTopic(
+    +id,
+    req.user.userId,
+    req.user.role,
+  );
+}
 
   @UseGuards(AuthGuard('jwt'))
   @Post()

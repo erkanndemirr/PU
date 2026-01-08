@@ -7,10 +7,13 @@ import {
   Req,
   Query,
   Param,
+  Put,
+  Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './auth.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateProfileDto } from './update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,7 +29,18 @@ export class AuthController {
   searchUsers(@Query('q') q: string) {
     return this.authService.search(q);
   }
-
+// auth.controller.ts
+@UseGuards(AuthGuard('jwt'))
+@Patch('profile')
+updateProfile(
+  @Req() req,
+  @Body() dto: UpdateProfileDto,
+) {
+  return this.authService.updateProfile(
+    req.user.userId,
+    dto,
+  );
+}
   @Get(':id')
   getUserProfile(@Param('id') id: string) {
     return this.authService.getUserProfile(+id); // ✅ service

@@ -1,8 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './auth.dto';
+import { Prisma } from '@prisma/client';
+import { UpdateProfileDto } from './update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -128,8 +130,70 @@ async getUserPosts(userId: number) {
       topic: { select: { id: true, title: true } },
     },
   });
-}
+}async updateProfile(userId: number, dto: UpdateProfileDto) {
+  const user = await this.prisma.user.findUnique({
+    where: { id: userId },
+  });
 
+  if (!user) {
+    throw new ForbiddenException();
+  }
+
+  // 🔐 Şifre değiştirme kontrolü
+  if (dto.newPassword) {
+    if (!dto.currentPassword) {
+      throw new BadRequestException('Mevcut şifre gerekli');
+    }
+
+    const match = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
+
+    if (!match) {
+      throw new BadRequestException('Mevcut şifre yanlış');
+    }
+
+    dto.newPassword = await bcrypt.hash(dto.newPassword, 10);
+  }
+
+  // ❌ username & email çakışma kontrolü
+  if (dto.username && dto.username !== user.username) {
+    const exists = await this.prisma.user.findUnique({
+      where: { username: dto.username },
+    });
+    if (exists) throw new BadRequestException('Bu kullanıcı adı kullanılıyor');
+  }
+
+  if (dto.email && dto.email !== user.email) {
+    const exists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (exists) throw new BadRequestException('Bu email kullanılıyor');
+  }
+
+  return this.prisma.user.update({
+    where: { id: userId },
+    data: {
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      username: dto.username,
+      email: dto.email,
+      bio: dto.bio,
+      avatar: dto.avatar,
+      password: dto.newPassword,
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      username: true,
+      email: true,
+      bio: true,
+      avatar: true,
+    },
+  });
+}
  async login(username: string, password: string) {
   const user = await this.prisma.user.findUnique({
     where: { username },

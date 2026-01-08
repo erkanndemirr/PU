@@ -21,6 +21,58 @@ export class PostService {
     },
   });
 }
+async updatePost(
+  postId: number,
+  content: string,
+  userId: number,
+) {
+  const post = await this.prisma.post.findUnique({
+    where: { id: postId },
+  });
+
+  if (!post || post.authorId !== userId) {
+    throw new ForbiddenException('Yetkin yok');
+  }
+
+  return this.prisma.post.update({
+    where: { id: postId },
+    data: { content },
+  });
+}
+async getUserPosts(
+  userId: number,
+  page = 1,
+  limit = 10,
+) {
+  return this.prisma.post.findMany({
+    where: { authorId: userId },
+    orderBy: { createdAt: 'desc' },
+    skip: (page - 1) * limit,
+    take: limit,
+    include: {
+      topic: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+  });
+}
+
+async deletePost(postId: number, userId: number) {
+  const post = await this.prisma.post.findUnique({
+    where: { id: postId },
+  });
+
+  if (!post || post.authorId !== userId) {
+    throw new ForbiddenException('Yetkin yok');
+  }
+
+  return this.prisma.post.delete({
+    where: { id: postId },
+  });
+}
 
     async findByTopic(topicId: number,userId?:number) {
     return this.prisma.post.findMany({
