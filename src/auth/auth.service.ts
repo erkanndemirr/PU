@@ -194,6 +194,7 @@ async getUserPosts(userId: number) {
     },
   });
 }
+
  async login(username: string, password: string) {
   const user = await this.prisma.user.findUnique({
     where: { username },
