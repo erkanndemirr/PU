@@ -8,7 +8,7 @@ export class TopicService {
   // Parametreleri bir obje olarak almak (DTO mantığı) her zaman daha güvenlidir
   create(data: {
     title: string;
-    topicContent?: string;
+    topicContent: string;
     category?: string;
     country?: string;
     state?: string;

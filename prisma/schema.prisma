@@ -43,9 +43,12 @@ model Topic {
   title     String
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
+  topicContent String
   posts     Post[]
-
+category  String?
+country String?
+state String?
+imageUrl String?
   createdAt DateTime @default(now())
 }
 
